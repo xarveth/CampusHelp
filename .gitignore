@@ -1,0 +1,14 @@
+# Build outputs
+backend/target/
+frontend/node_modules/
+frontend/dist/
+
+# Environment / secrets (never commit real credentials)
+backend/src/main/resources/application-*.properties
+.env
+
+# OS / editor
+.DS_Store
+.idea/
+*.iml
+.vscode/
