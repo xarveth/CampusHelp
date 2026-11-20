@@ -3,7 +3,7 @@
 A full-stack web application where students submit campus complaints and track
 them, and administrators review them, update their status, and see reports.
 
-**Author:** Himanshu Yadav, Roll No. 2401450100016, B.Tech CSE 3rd Year
+**Author:** Himanshu Yadav
 
 ## Tech Stack
 
