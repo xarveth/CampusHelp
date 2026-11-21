@@ -1,11 +1,15 @@
 package com.campushelp.controller;
 
+import com.campushelp.dto.AssignRequest;
 import com.campushelp.dto.ComplaintResponse;
+import com.campushelp.dto.CreateStaffRequest;
+import com.campushelp.dto.StaffResponse;
 import com.campushelp.dto.UpdateStatusRequest;
 import com.campushelp.entity.User;
 import com.campushelp.service.AdminService;
 import com.campushelp.service.ComplaintService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,5 +51,24 @@ public class AdminController {
                                           @Valid @RequestBody UpdateStatusRequest req,
                                           @AuthenticationPrincipal User admin) {
         return adminService.updateStatus(id, req.status(), admin);
+    }
+
+    /** Create a staff account (admin only). */
+    @PostMapping("/staff")
+    @ResponseStatus(HttpStatus.CREATED)
+    public StaffResponse createStaff(@Valid @RequestBody CreateStaffRequest req) {
+        return adminService.createStaff(req);
+    }
+
+    @GetMapping("/staff")
+    public List<StaffResponse> staff() {
+        return adminService.listStaff();
+    }
+
+    /** Assign a complaint to a staff member (admin only). */
+    @PatchMapping("/complaints/{id}/assign")
+    public ComplaintResponse assign(@PathVariable Long id,
+                                    @Valid @RequestBody AssignRequest req) {
+        return adminService.assignComplaint(id, req.staffId());
     }
 }

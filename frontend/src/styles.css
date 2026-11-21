@@ -41,4 +41,19 @@ input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1;
 .filters input, .filters select { width: auto; flex: 1; min-width: 160px; }
 .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 16px 0; }
 .timeline { display: grid; gap: 8px; }
+/* Charts (plain CSS bars, no library) */
+.chart { display: grid; gap: 10px; }
+.chart-row { display: grid; grid-template-columns: 140px 1fr 32px; gap: 10px; align-items: center; font-size: 14px; }
+.chart-label { font-weight: 600; }
+.chart-track { background: #eef2f7; border-radius: 999px; height: 18px; overflow: hidden; }
+.chart-bar { background: #155e9c; height: 100%; border-radius: 999px; min-width: 4px; }
+.chart-value { text-align: right; }
+/* Photos */
+.photo-preview { max-width: 220px; max-height: 160px; border-radius: 8px; border: 1px solid #e2e8f0; display: block; margin: 4px 0 8px; }
+.photo-full { max-width: 100%; max-height: 420px; border-radius: 10px; border: 1px solid #e2e8f0; margin: 8px 0; }
+/* Ratings */
+.stars { color: #d97706; letter-spacing: 1px; white-space: nowrap; }
+.stars-picker { display: flex; align-items: center; gap: 2px; }
+.star-btn { background: none; border: none; font-size: 28px; color: #cbd5e1; cursor: pointer; padding: 0 2px; }
+.star-btn.on { color: #d97706; }
 @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }

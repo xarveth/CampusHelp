@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api, getUser } from '../api.js'
+import { api, apiForm, fileUrl, getUser } from '../api.js'
 
 export function statusLabel(status) {
   return status === 'IN_PROGRESS' ? 'In Progress'
     : status === 'RESOLVED' ? 'Resolved' : 'Pending'
+}
+
+export function starsText(stars) {
+  return '★'.repeat(stars) + '☆'.repeat(5 - stars)
 }
 
 export default function StudentDashboard() {
@@ -14,9 +18,22 @@ export default function StudentDashboard() {
   const [subject, setSubject] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [description, setDescription] = useState('')
+  const [photo, setPhoto] = useState(null)
+  const [photoPreview, setPhotoPreview] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [busy, setBusy] = useState(false)
+
+  function onPhotoChange(e) {
+    const file = e.target.files?.[0] || null
+    if (file && file.size > 5 * 1024 * 1024) {
+      setError('Photo must be 5 MB or smaller.')
+      e.target.value = ''
+      return
+    }
+    setPhoto(file)
+    setPhotoPreview(file ? URL.createObjectURL(file) : '')
+  }
 
   async function load() {
     try {
@@ -40,13 +57,25 @@ export default function StudentDashboard() {
     setSuccess('')
     setBusy(true)
     try {
-      const created = await api('/complaints', {
-        method: 'POST',
-        body: { subject, categoryId: Number(categoryId), description },
-      })
+      let created
+      if (photo) {
+        const form = new FormData()
+        form.append('subject', subject)
+        form.append('categoryId', String(Number(categoryId)))
+        form.append('description', description)
+        form.append('photo', photo)
+        created = await apiForm('/complaints', { formData: form })
+      } else {
+        created = await api('/complaints', {
+          method: 'POST',
+          body: { subject, categoryId: Number(categoryId), description },
+        })
+      }
       setSuccess(`Complaint submitted. Your complaint ID is ${created.code}.`)
       setSubject('')
       setDescription('')
+      setPhoto(null)
+      setPhotoPreview('')
       load()
     } catch (err) {
       setError(err.message)
@@ -80,6 +109,16 @@ export default function StudentDashboard() {
             <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} required
               placeholder="Describe the problem in detail…" />
           </label>
+          <label>Photo (optional, JPG/PNG/WebP, max 5 MB)
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={onPhotoChange} />
+          </label>
+          {photoPreview && (
+            <div>
+              <img className="photo-preview" src={photoPreview} alt="Photo preview" />
+              <button type="button" className="btn btn-ghost btn-small"
+                onClick={() => { setPhoto(null); setPhotoPreview('') }}>Remove photo</button>
+            </div>
+          )}
           <button className="btn btn-primary" disabled={busy}>{busy ? 'Submitting…' : 'Submit Complaint'}</button>
         </form>
       </div>
@@ -89,16 +128,17 @@ export default function StudentDashboard() {
         {complaints.length === 0 && <p className="muted">You have not submitted any complaints yet.</p>}
         <table className="table">
           <thead>
-            <tr><th>ID</th><th>Subject</th><th>Category</th><th>Date</th><th>Status</th><th></th></tr>
+            <tr><th>ID</th><th>Subject</th><th>Category</th><th>Date</th><th>Status</th><th>Rating</th><th></th></tr>
           </thead>
           <tbody>
             {complaints.map((c) => (
               <tr key={c.id}>
                 <td>{c.code}</td>
-                <td>{c.subject}</td>
+                <td>{c.subject}{c.photoUrl ? ' 📷' : ''}</td>
                 <td>{c.category}</td>
                 <td>{new Date(c.createdAt).toLocaleDateString()}</td>
                 <td><span className={`badge ${c.status.toLowerCase()}`}>{statusLabel(c.status)}</span></td>
+                <td>{c.rating ? <span className="stars" title={c.rating.comment || ''}>{starsText(c.rating.stars)}</span> : '—'}</td>
                 <td><Link to={`/complaints/${c.id}`}>View</Link></td>
               </tr>
             ))}

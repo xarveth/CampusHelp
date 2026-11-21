@@ -19,10 +19,12 @@ import java.util.List;
 
 /**
  * Seeds the database on first start (only when empty):
- * admin + student Himanshu Yadav, the 7 categories, and the worked example CH-1001.
- * Demo logins (password: campus123 for both):
+ * admin + student Himanshu Yadav + staff Ravi Kumar, the 7 categories,
+ * and the worked example CH-1001.
+ * Demo logins (password: campus123 for all):
  *   admin@campushelp.edu  (ADMIN)
  *   himanshu@campushelp.edu  (STUDENT, Himanshu Yadav)
+ *   staff@campushelp.edu  (STAFF, Ravi Kumar)
  */
 @Configuration
 public class DataSeeder {
@@ -41,6 +43,8 @@ public class DataSeeder {
                     passwordEncoder.encode("campus123"), Role.ADMIN));
             User himanshu = users.save(new User("Himanshu Yadav", "himanshu@campushelp.edu",
                     passwordEncoder.encode("campus123"), Role.STUDENT));
+            users.save(new User("Ravi Kumar", "staff@campushelp.edu",
+                    passwordEncoder.encode("campus123"), Role.STAFF));
 
             List<String> names = List.of("Classroom", "Laboratory", "Internet",
                     "Electricity", "Cleanliness", "Water", "Other");

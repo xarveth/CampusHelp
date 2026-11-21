@@ -4,20 +4,29 @@ import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import StudentDashboard from './pages/StudentDashboard.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
+import StaffDashboard from './pages/StaffDashboard.jsx'
 import ComplaintDetail from './pages/ComplaintDetail.jsx'
+
+function homeFor(role) {
+  return role === 'ADMIN' ? '/admin' : role === 'STAFF' ? '/staff' : '/student'
+}
+
+function roleLabel(role) {
+  return role === 'ADMIN' ? 'Admin' : role === 'STAFF' ? 'Staff' : 'Student'
+}
 
 function Protected({ children, role }) {
   const user = getUser()
   if (!user) return <Navigate to="/login" replace />
   if (role && user.role !== role) {
-    return <Navigate to={user.role === 'ADMIN' ? '/admin' : '/student'} replace />
+    return <Navigate to={homeFor(user.role)} replace />
   }
   return children
 }
 
 function Home() {
   const user = getUser()
-  if (user) return <Navigate to={user.role === 'ADMIN' ? '/admin' : '/student'} replace />
+  if (user) return <Navigate to={homeFor(user.role)} replace />
   return <Navigate to="/login" replace />
 }
 
@@ -37,7 +46,7 @@ export default function App() {
         <span className="tagline">Student Grievance &amp; Complaint Management</span>
         {user && (
           <div className="userbox">
-            <span>{user.name} · {user.role === 'ADMIN' ? 'Admin' : 'Student'}</span>
+            <span>{user.name} · {roleLabel(user.role)}</span>
             <button className="btn btn-ghost" onClick={handleLogout}>Logout</button>
           </div>
         )}
@@ -50,6 +59,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/student" element={<Protected role="STUDENT"><StudentDashboard /></Protected>} />
           <Route path="/admin" element={<Protected role="ADMIN"><AdminDashboard /></Protected>} />
+          <Route path="/staff" element={<Protected role="STAFF"><StaffDashboard /></Protected>} />
           <Route path="/complaints/:id" element={<Protected><ComplaintDetail /></Protected>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

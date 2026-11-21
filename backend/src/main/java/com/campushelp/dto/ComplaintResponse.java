@@ -15,18 +15,33 @@ public record ComplaintResponse(
         String status,
         String studentName,
         String studentEmail,
+        String photoUrl,
+        Long assignedToId,
+        String assignedToName,
+        RatingResponse rating,
         LocalDateTime createdAt,
         List<StatusHistoryResponse> history
 ) {
     public static ComplaintResponse of(Complaint c, List<StatusHistoryResponse> history) {
+        return of(c, history, null);
+    }
+
+    public static ComplaintResponse of(Complaint c, List<StatusHistoryResponse> history,
+                                       RatingResponse rating) {
         return new ComplaintResponse(
                 c.getId(), c.getCode(), c.getSubject(), c.getDescription(),
                 c.getCategory().getName(), c.getCategory().getId(),
                 c.getStatus().name(),
                 c.getStudent().getName(), c.getStudent().getEmail(),
+                c.getPhotoUrl(),
+                c.getAssignedTo() == null ? null : c.getAssignedTo().getId(),
+                c.getAssignedTo() == null ? null : c.getAssignedTo().getName(),
+                rating,
                 c.getCreatedAt(), history);
     }
 
     public record StatusHistoryResponse(
             String oldStatus, String newStatus, String changedBy, LocalDateTime changedAt) {}
+
+    public record RatingResponse(int stars, String comment, LocalDateTime createdAt) {}
 }

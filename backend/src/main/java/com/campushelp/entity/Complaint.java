@@ -34,6 +34,15 @@ public class Complaint {
     @Column(nullable = false, length = 20)
     private ComplaintStatus status = ComplaintStatus.PENDING;
 
+    // Relative URL of the attached photo, e.g. /api/uploads/<uuid>.jpg — null when none.
+    @Column(name = "photo_url", length = 500)
+    private String photoUrl;
+
+    // Staff member the complaint is assigned to (admin-assigned, nullable).
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_to_id")
+    private User assignedTo;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -53,6 +62,10 @@ public class Complaint {
     public void setDescription(String description) { this.description = description; }
     public ComplaintStatus getStatus() { return status; }
     public void setStatus(ComplaintStatus status) { this.status = status; }
+    public String getPhotoUrl() { return photoUrl; }
+    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
+    public User getAssignedTo() { return assignedTo; }
+    public void setAssignedTo(User assignedTo) { this.assignedTo = assignedTo; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

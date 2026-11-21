@@ -13,6 +13,8 @@ public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
 
     List<Complaint> findByStudentIdOrderByCreatedAtDesc(Long studentId);
 
+    List<Complaint> findByAssignedToIdOrderByCreatedAtDesc(Long staffId);
+
     List<Complaint> findAllByOrderByCreatedAtDesc();
 
     List<Complaint> findByStatusOrderByCreatedAtDesc(ComplaintStatus status);

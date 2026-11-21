@@ -39,3 +39,22 @@ export async function api(path, { method = 'GET', body, auth = true } = {}) {
   }
   return data
 }
+
+/** Multipart (FormData) request — e.g. complaint submission with a photo. */
+export async function apiForm(path, { method = 'POST', formData } = {}) {
+  const headers = {}
+  if (getToken()) headers['Authorization'] = `Bearer ${getToken()}`
+  const res = await fetch(`${API_BASE}${path}`, { method, headers, body: formData })
+  const text = await res.text()
+  const data = text ? JSON.parse(text) : null
+  if (!res.ok) {
+    throw new Error((data && data.error) || `Request failed (${res.status})`)
+  }
+  return data
+}
+
+/** Turn a backend photo path (/api/uploads/...) into a full URL for <img>. */
+export function fileUrl(path) {
+  if (!path) return ''
+  return path.startsWith('http') ? path : `${API_BASE}${path}`
+}
