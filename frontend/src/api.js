@@ -56,5 +56,9 @@ export async function apiForm(path, { method = 'POST', formData } = {}) {
 /** Turn a backend photo path (/api/uploads/...) into a full URL for <img>. */
 export function fileUrl(path) {
   if (!path) return ''
-  return path.startsWith('http') ? path : `${API_BASE}${path}`
+  if (path.startsWith('http')) return path
+  // Already an absolute /api path (e.g. when VITE_API_URL is '/api' behind
+  // a same-origin proxy) — use it as-is instead of doubling the prefix.
+  if (path.startsWith('/api')) return path
+  return `${API_BASE}${path}`
 }
