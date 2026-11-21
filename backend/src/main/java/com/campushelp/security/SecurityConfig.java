@@ -55,7 +55,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(corsAllowedOrigins.split(",")));
+        // Origin patterns (not exact origins) so wildcard entries such as
+        // https://*.vercel.app cover the production site and every preview
+        // deployment. Exact origins from the env var still match as-is.
+        config.setAllowedOriginPatterns(List.of(corsAllowedOrigins.split(",")));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
