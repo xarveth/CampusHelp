@@ -4,6 +4,7 @@ import com.campushelp.dto.AssignRequest;
 import com.campushelp.dto.ComplaintResponse;
 import com.campushelp.dto.CreateStaffRequest;
 import com.campushelp.dto.StaffResponse;
+import com.campushelp.dto.UpdatePriorityRequest;
 import com.campushelp.dto.UpdateStatusRequest;
 import com.campushelp.entity.User;
 import com.campushelp.service.AdminService;
@@ -50,7 +51,15 @@ public class AdminController {
     public ComplaintResponse updateStatus(@PathVariable Long id,
                                           @Valid @RequestBody UpdateStatusRequest req,
                                           @AuthenticationPrincipal User admin) {
-        return adminService.updateStatus(id, req.status(), admin);
+        return adminService.updateStatus(id, req.status(), req.note(), admin);
+    }
+
+    /** Change a complaint's triage priority (admin only). */
+    @PatchMapping("/complaints/{id}/priority")
+    public ComplaintResponse updatePriority(@PathVariable Long id,
+                                            @Valid @RequestBody UpdatePriorityRequest req,
+                                            @AuthenticationPrincipal User admin) {
+        return adminService.setPriority(id, req.priority());
     }
 
     /** Create a staff account (admin only). */

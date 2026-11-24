@@ -29,6 +29,11 @@ public class StatusHistory {
     @Column(name = "new_status", nullable = false, length = 20)
     private ComplaintStatus newStatus;
 
+    // Optional note recorded with the change — e.g. the student's reopen
+    // reason, or an admin's note explaining why a status was changed.
+    @Column(length = 500)
+    private String note;
+
     @Column(name = "changed_at")
     private LocalDateTime changedAt = LocalDateTime.now();
 
@@ -36,10 +41,17 @@ public class StatusHistory {
 
     public StatusHistory(Complaint complaint, User admin,
                          ComplaintStatus oldStatus, ComplaintStatus newStatus) {
+        this(complaint, admin, oldStatus, newStatus, null);
+    }
+
+    public StatusHistory(Complaint complaint, User admin,
+                         ComplaintStatus oldStatus, ComplaintStatus newStatus,
+                         String note) {
         this.complaint = complaint;
         this.admin = admin;
         this.oldStatus = oldStatus;
         this.newStatus = newStatus;
+        this.note = note;
     }
 
     public Long getId() { return id; }
@@ -52,6 +64,8 @@ public class StatusHistory {
     public void setOldStatus(ComplaintStatus oldStatus) { this.oldStatus = oldStatus; }
     public ComplaintStatus getNewStatus() { return newStatus; }
     public void setNewStatus(ComplaintStatus newStatus) { this.newStatus = newStatus; }
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
     public LocalDateTime getChangedAt() { return changedAt; }
     public void setChangedAt(LocalDateTime changedAt) { this.changedAt = changedAt; }
 }

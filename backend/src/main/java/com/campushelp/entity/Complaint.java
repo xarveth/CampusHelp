@@ -32,7 +32,22 @@ public class Complaint {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ComplaintStatus status = ComplaintStatus.PENDING;
+    private ComplaintStatus status = ComplaintStatus.SUBMITTED;
+
+    // Triage priority (student picks one at submit; admin can change it).
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Priority priority = Priority.MEDIUM;
+
+    // Set when the complaint becomes RESOLVED, cleared when it is reopened.
+    // Used for the average-resolution-time analytics.
+    @Column(name = "resolved_at")
+    private LocalDateTime resolvedAt;
+
+    // When this complaint was flagged as a duplicate of an earlier one.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "duplicate_of_id")
+    private Complaint duplicateOf;
 
     // Relative URL of the attached photo, e.g. /api/uploads/<uuid>.jpg — null when none.
     @Column(name = "photo_url", length = 500)
@@ -62,6 +77,12 @@ public class Complaint {
     public void setDescription(String description) { this.description = description; }
     public ComplaintStatus getStatus() { return status; }
     public void setStatus(ComplaintStatus status) { this.status = status; }
+    public Priority getPriority() { return priority; }
+    public void setPriority(Priority priority) { this.priority = priority; }
+    public LocalDateTime getResolvedAt() { return resolvedAt; }
+    public void setResolvedAt(LocalDateTime resolvedAt) { this.resolvedAt = resolvedAt; }
+    public Complaint getDuplicateOf() { return duplicateOf; }
+    public void setDuplicateOf(Complaint duplicateOf) { this.duplicateOf = duplicateOf; }
     public String getPhotoUrl() { return photoUrl; }
     public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
     public User getAssignedTo() { return assignedTo; }

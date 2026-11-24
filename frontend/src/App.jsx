@@ -1,11 +1,13 @@
 import { Navigate, Route, Routes, Link, useNavigate } from 'react-router-dom'
 import { getUser, logout } from './api.js'
+import Homepage from './pages/Homepage.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import StudentDashboard from './pages/StudentDashboard.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 import StaffDashboard from './pages/StaffDashboard.jsx'
 import ComplaintDetail from './pages/ComplaintDetail.jsx'
+import NotificationBell from './components/NotificationBell.jsx'
 
 function homeFor(role) {
   return role === 'ADMIN' ? '/admin' : role === 'STAFF' ? '/staff' : '/student'
@@ -25,9 +27,8 @@ function Protected({ children, role }) {
 }
 
 function Home() {
-  const user = getUser()
-  if (user) return <Navigate to={homeFor(user.role)} replace />
-  return <Navigate to="/login" replace />
+  // Public landing page; logged-in users are sent to their dashboard from there.
+  return <Homepage />
 }
 
 export default function App() {
@@ -46,8 +47,15 @@ export default function App() {
         <span className="tagline">Student Grievance &amp; Complaint Management</span>
         {user && (
           <div className="userbox">
+            <NotificationBell />
             <span>{user.name} · {roleLabel(user.role)}</span>
             <button className="btn btn-ghost" onClick={handleLogout}>Logout</button>
+          </div>
+        )}
+        {!user && (
+          <div className="userbox">
+            <Link className="btn btn-ghost" to="/login">Log in</Link>
+            <Link className="btn btn-primary" to="/register">Register</Link>
           </div>
         )}
       </header>

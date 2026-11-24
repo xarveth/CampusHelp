@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api.js'
-import { starsText, statusLabel } from './StudentDashboard.jsx'
+import { priorityLabel, starsText, statusLabel } from './StudentDashboard.jsx'
 
 /** Simple SVG/CSS bar chart (no chart library). `data` is {label: count}. */
 function BarChart({ data }) {
@@ -22,6 +22,15 @@ function BarChart({ data }) {
     </div>
   )
 }
+
+const STATUS_OPTIONS = [
+  ['SUBMITTED', 'Submitted'],
+  ['UNDER_REVIEW', 'Under Review'],
+  ['ASSIGNED', 'Assigned'],
+  ['IN_PROGRESS', 'In Progress'],
+  ['RESOLVED', 'Resolved'],
+  ['REOPENED', 'Reopened'],
+]
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null)
@@ -107,11 +116,9 @@ export default function AdminDashboard() {
     }
   }
 
-  const statusChart = stats?.byStatus ? {
-    Pending: stats.byStatus.PENDING || 0,
-    'In Progress': stats.byStatus.IN_PROGRESS || 0,
-    Resolved: stats.byStatus.RESOLVED || 0,
-  } : {}
+  const statusChart = stats?.byStatus ? Object.fromEntries(
+    STATUS_OPTIONS.map(([value, label]) => [label, stats.byStatus[value] || 0])
+  ) : {}
 
   return (
     <div>
@@ -122,10 +129,11 @@ export default function AdminDashboard() {
 
       {stats && (
         <div className="stats">
-          <div className="stat"><strong>{stats.total}</strong><span>Total</span></div>
-          <div className="stat"><strong>{stats.pending}</strong><span>Pending</span></div>
-          <div className="stat"><strong>{stats.inProgress}</strong><span>In Progress</span></div>
+          <div className="stat"><strong>{stats.total}</strong><span>Total complaints</span></div>
+          <div className="stat"><strong>{stats.open ?? (stats.total - stats.resolved)}</strong><span>Open</span></div>
+          <div className="stat overdue-stat"><strong>{stats.overdue}</strong><span>Overdue (&gt;7 days open)</span></div>
           <div className="stat"><strong>{stats.resolved}</strong><span>Resolved</span></div>
+          <div className="stat"><strong>{stats.averageResolutionText || '—'}</strong><span>Average resolution time</span></div>
           <div className="stat"><strong>{stats.averageRating == null ? '—' : `★ ${stats.averageRating}`}</strong>
             <span>Average rating ({stats.ratingCount || 0})</span></div>
         </div>
@@ -133,7 +141,7 @@ export default function AdminDashboard() {
 
       {stats?.byCategory && (
         <div className="card">
-          <h2>Complaints by Category</h2>
+          <h2>Complaints by Department (Category)</h2>
           <BarChart data={stats.byCategory} />
         </div>
       )}
@@ -145,14 +153,63 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {stats?.frequentProblems?.length > 0 && (
+        <div className="card">
+          <h2>Frequently Reported Problems</h2>
+          <ul className="kv">
+            {stats.frequentProblems.map((f, i) => (
+              <li key={i}><span>{f.subject}</span><strong>{f.count} report{f.count > 1 ? 's' : ''}</strong></li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {stats?.mostReported?.length > 0 && (
+        <div className="card">
+          <h2>Most Students Affected (same problem)</h2>
+          <ul className="kv">
+            {stats.mostReported.map((m) => (
+              <li key={m.code}>
+                <span><Link to={`/complaints/${m.code}`}>{m.code}</Link> — {m.subject}</span>
+                <strong>{m.count} student{m.count > 1 ? 's' : ''}</strong>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {stats?.overdueList?.length > 0 && (
+        <div className="card">
+          <h2>Overdue Complaints (open more than 7 days)</h2>
+          <table className="table">
+            <thead>
+              <tr><th>ID</th><th>Subject</th><th>Category</th><th>Priority</th><th>Submitted</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+              {stats.overdueList.map((c) => (
+                <tr key={c.id}>
+                  <td>{c.code}</td>
+                  <td>{c.subject}</td>
+                  <td>{c.category}</td>
+                  <td><span className={`priority ${c.priority?.toLowerCase()}`}>{priorityLabel(c.priority)}</span></td>
+                  <td>{new Date(c.createdAt).toLocaleDateString()}</td>
+                  <td><span className={`badge ${c.status.toLowerCase()}`}>{statusLabel(c.status)}</span></td>
+                  <td><Link to={`/complaints/${c.id}`}>Review</Link></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <div className="card">
         <h2>All Complaints</h2>
         <form onSubmit={search} className="filters">
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">All statuses</option>
-            <option value="PENDING">Pending</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="RESOLVED">Resolved</option>
+            {STATUS_OPTIONS.map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
           </select>
           <input value={query} onChange={(e) => setQuery(e.target.value)}
             placeholder="Search ID, subject, student, category…" />
@@ -164,7 +221,7 @@ export default function AdminDashboard() {
         {complaints.length === 0 && <p className="muted">No complaints match.</p>}
         <table className="table">
           <thead>
-            <tr><th>ID</th><th>Subject</th><th>Category</th><th>Student</th><th>Assigned To</th><th>Rating</th><th>Date</th><th>Status</th><th></th></tr>
+            <tr><th>ID</th><th>Subject</th><th>Category</th><th>Student</th><th>Assigned To</th><th>Priority</th><th>Rating</th><th>Date</th><th>Status</th><th></th></tr>
           </thead>
           <tbody>
             {complaints.map((c) => (
@@ -174,6 +231,7 @@ export default function AdminDashboard() {
                 <td>{c.category}</td>
                 <td>{c.studentName}</td>
                 <td>{c.assignedToName || '—'}</td>
+                <td><span className={`priority ${c.priority?.toLowerCase()}`}>{priorityLabel(c.priority)}</span></td>
                 <td>{c.rating ? <span className="stars">{starsText(c.rating.stars)}</span> : '—'}</td>
                 <td>{new Date(c.createdAt).toLocaleDateString()}</td>
                 <td><span className={`badge ${c.status.toLowerCase()}`}>{statusLabel(c.status)}</span></td>

@@ -60,9 +60,9 @@ public class DataSeeder {
             ch1001.setSubject("Computers not working");
             ch1001.setDescription("Several computers in the computer laboratory are not starting. "
                     + "This is affecting practical sessions.");
-            ch1001.setStatus(ComplaintStatus.PENDING);
+            ch1001.setStatus(ComplaintStatus.SUBMITTED);
             complaints.save(ch1001);
-            history.save(new StatusHistory(ch1001, null, null, ComplaintStatus.PENDING));
+            history.save(new StatusHistory(ch1001, null, null, ComplaintStatus.SUBMITTED));
         };
     }
 }

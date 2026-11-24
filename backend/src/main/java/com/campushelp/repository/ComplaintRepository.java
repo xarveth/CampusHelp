@@ -21,6 +21,18 @@ public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
 
     long countByStatus(ComplaintStatus status);
 
+    /** Open complaints in a category, newest first (duplicate detection scans these). */
+    @Query("SELECT c FROM Complaint c WHERE c.category.id = :categoryId AND c.status <> :resolved ORDER BY c.createdAt DESC")
+    List<Complaint> findOpenByCategoryId(Long categoryId, ComplaintStatus resolved);
+
+    /** Resolved complaints, for the average-resolution-time calculation. */
+    @Query("SELECT c FROM Complaint c WHERE c.status = 'RESOLVED' AND c.resolvedAt IS NOT NULL")
+    List<Complaint> findResolvedWithResolvedAt();
+
     @Query("SELECT c.category.name, COUNT(c) FROM Complaint c GROUP BY c.category.name ORDER BY COUNT(c) DESC")
     List<Object[]> countByCategory();
+
+    /** How many times each subject was submitted (frequently reported problems). */
+    @Query("SELECT c.subject, COUNT(c) FROM Complaint c GROUP BY c.subject ORDER BY COUNT(c) DESC")
+    List<Object[]> countBySubject();
 }
